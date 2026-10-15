@@ -60,6 +60,12 @@ button {
 .chip { display: flex; flex-direction: column; align-items: center; min-width: 34px; padding: 6px 4px; border-radius: 8px; background: var(--bg); }
 .chip b { font-weight: 600; }
 .chip span { font-size: 0.8rem; color: var(--accent); font-variant-numeric: tabular-nums; }
+.words { display: flex; flex-direction: column; gap: 14px; border-top: 1px solid var(--line); padding-top: 14px; }
+.word { display: flex; flex-direction: column; gap: 8px; }
+.word-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.word-name { font-weight: 600; letter-spacing: 0.04em; overflow-wrap: anywhere; min-width: 0; }
+.word-num { font-family: var(--font-display); font-size: 1.3rem; color: var(--accent); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.word-num small { font-family: var(--font-body); font-size: 0.85rem; color: var(--muted); }
 .sum { font-size: 0.9rem; color: var(--muted); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .empty { color: var(--muted); }
 h2 { font-family: var(--font-display); font-weight: 400; font-size: 1.3rem; margin: 0 0 8px; }
@@ -77,9 +83,9 @@ td:last-child { letter-spacing: 0.25em; }
   </header>
 
   <form id="form">
-    <label for="nome">Nome</label>
+    <label for="nome">Nome e cognome</label>
     <div class="field">
-      <input id="nome" value="Marco" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Es. Marco">
+      <input id="nome" value="Marco Rossi" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Es. Marco Rossi">
       <button type="submit">Calcola</button>
     </div>
   </form>
@@ -113,26 +119,45 @@ function riduci(n) {
   return n;
 }
 
-function calcola() {
-  const lettere = $("nome").value.normalize("NFD").replace(/[̀-ͯ]/g, "")
+function analizza(parola) {
+  const lettere = parola.normalize("NFD").replace(/[̀-ͯ]/g, "")
     .toUpperCase().split("").filter(c => MAPPA[c]);
+  const valori = lettere.map(c => MAPPA[c]);
+  const somma = valori.reduce((a, b) => a + b, 0);
+  return { lettere, valori, somma, ridotto: riduci(somma) };
+}
+
+function calcola() {
+  const parole = $("nome").value.trim().split(/\s+/)
+    .map(p => ({ testo: p, ...analizza(p) })).filter(p => p.lettere.length);
   const out = $("result");
-  if (!lettere.length) {
+  if (!parole.length) {
     out.innerHTML = '<p class="empty">Scrivi almeno una lettera (A–Z) per vedere il risultato.</p>';
     return;
   }
-  const valori = lettere.map(c => MAPPA[c]);
-  const somma = valori.reduce((a, b) => a + b, 0);
+  const somma = parole.reduce((a, p) => a + p.somma, 0);
   const ridotto = riduci(somma);
   const [pianeta, desc] = PIANETI[ridotto];
+  const freccia = (s, r) => s > 9 ? `${s} → ${r}` : `${s}`;
+  const dettaglio = parole.map(p => `
+    <div class="word">
+      <div class="word-head">
+        <span class="word-name">${p.lettere.join("")}</span>
+        <span class="word-num">${p.ridotto} <small>(${p.somma}) · ${PIANETI[p.ridotto][0]}</small></span>
+      </div>
+      <div class="letters">${p.lettere.map((c, i) => `<div class="chip"><b>${c}</b><span>${p.valori[i]}</span></div>`).join("")}</div>
+      <div class="sum">${p.valori.join(" + ")} = ${freccia(p.somma, p.ridotto)}</div>
+    </div>`).join("");
+  const totale = parole.length > 1
+    ? `<div class="sum">Totale: ${parole.map(p => p.somma).join(" + ")} = ${freccia(somma, ridotto)}</div>` : "";
   out.innerHTML = `
     <div class="numbers">
-      <div><div class="cap">Numero ridotto</div><div class="big">${ridotto}</div></div>
+      <div><div class="cap">${parole.length > 1 ? "Totale ridotto" : "Numero ridotto"}</div><div class="big">${ridotto}</div></div>
       <div><div class="cap">Somma grezza</div><div class="compound">${somma}</div></div>
     </div>
-    <div class="letters">${lettere.map((c, i) => `<div class="chip"><b>${c}</b><span>${valori[i]}</span></div>`).join("")}</div>
-    <div class="sum">${valori.join(" + ")} = ${somma}${somma > 9 ? " → " + ridotto : ""}</div>
-    <div class="planet"><div class="cap">Pianeta</div><strong>${pianeta}</strong><p>${desc}</p></div>`;
+    ${totale}
+    <div class="planet"><div class="cap">Pianeta</div><strong>${pianeta}</strong><p>${desc}</p></div>
+    <div class="words"><div class="cap">${parole.length > 1 ? "Parola per parola" : "Lettere"}</div>${dettaglio}</div>`;
 }
 
 const gruppi = {};
