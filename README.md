@@ -24,6 +24,14 @@ Esempio: `MARCO` = 4 + 1 + 2 + 3 + 7 = **17** → 1 + 7 = **8**.
 
 ## Come eseguirla
 
-1. In Xcode (15 o successivo): **File → New → Project → iOS → App**, interfaccia SwiftUI, nome `NumerologiaVedica`.
-2. Sostituisci i file `ContentView.swift` e `NumerologiaVedicaApp.swift` generati con quelli nella cartella `NumerologiaVedica/`.
-3. Avvia su simulatore o dispositivo (iOS 16+).
+Serve un Mac con Xcode 15 o successivo.
+
+```bash
+git clone https://github.com/liuliuba69-hue/Calendario-.git
+cd Calendario-
+open NumerologiaVedica.xcodeproj
+```
+
+In Xcode scegli un simulatore iPhone e premi ▶︎ (Cmd+R). Per installarla sul tuo iPhone: **Signing & Capabilities** → seleziona il tuo Team e cambia il Bundle Identifier (`com.example.NumerologiaVedica`) con uno tuo.
+
+Requisiti: iOS 16+.
