@@ -1,0 +1,145 @@
+<title>Numerologia Vedica</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Figtree:wght@400;500;600&display=swap">
+<style>
+/* Layout: una colonna stretta da telefono — campo, numero grande, scomposizione lettera per lettera, tabella */
+:root {
+  --bg: #eef0f5;
+  --surface: #ffffff;
+  --ink: #1d1f3a;
+  --muted: #5d6180;
+  --line: #d6d9e6;
+  --accent: #36358f;
+  --saffron: #c96f1a;
+  --font-display: "Marcellus", "Iowan Old Style", Georgia, serif;
+  --font-body: "Figtree", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12132a; --surface: #1c1e3a; --ink: #eceaf6; --muted: #a3a6c4;
+    --line: #2f3256; --accent: #a9a8ff; --saffron: #f0a35a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12132a; --surface: #1c1e3a; --ink: #eceaf6; --muted: #a3a6c4;
+  --line: #2f3256; --accent: #a9a8ff; --saffron: #f0a35a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 48px;
+}
+main { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: 2.1rem; line-height: 1.1; margin: 0; text-wrap: balance; }
+.intro { color: var(--muted); margin: 6px 0 0; font-size: 0.95rem; }
+label { display: block; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.field { display: flex; gap: 8px; }
+input {
+  flex: 1; min-width: 0; font: 500 1.25rem var(--font-body); letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--line);
+  background: var(--surface); color: var(--ink);
+}
+input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button {
+  font: 600 1rem var(--font-body); padding: 0 18px; border-radius: 10px; border: 0;
+  background: var(--accent); color: var(--bg); cursor: pointer;
+}
+.result { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.numbers { display: flex; align-items: flex-end; gap: 20px; }
+.big { font-family: var(--font-display); font-size: 4.5rem; line-height: 0.9; color: var(--accent); font-variant-numeric: tabular-nums; }
+.compound { font-family: var(--font-display); font-size: 1.6rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.cap { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.planet { border-top: 1px solid var(--line); padding-top: 14px; }
+.planet strong { font-family: var(--font-display); font-weight: 400; font-size: 1.3rem; color: var(--saffron); }
+.planet p { margin: 4px 0 0; color: var(--muted); font-size: 0.92rem; }
+.letters { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: flex; flex-direction: column; align-items: center; min-width: 34px; padding: 6px 4px; border-radius: 8px; background: var(--bg); }
+.chip b { font-weight: 600; }
+.chip span { font-size: 0.8rem; color: var(--accent); font-variant-numeric: tabular-nums; }
+.sum { font-size: 0.9rem; color: var(--muted); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.empty { color: var(--muted); }
+h2 { font-family: var(--font-display); font-weight: 400; font-size: 1.3rem; margin: 0 0 8px; }
+table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+td { padding: 7px 4px; border-bottom: 1px solid var(--line); }
+td:first-child { width: 40px; font-family: var(--font-display); font-size: 1.15rem; color: var(--accent); }
+td:last-child { letter-spacing: 0.25em; }
+.note { font-size: 0.82rem; color: var(--muted); margin: 8px 0 0; }
+</style>
+
+<main>
+  <header>
+    <h1>Numerologia Vedica</h1>
+    <p class="intro">Scrivi un nome o una parola: calcolo il valore secondo il sistema caldeo/vedico.</p>
+  </header>
+
+  <form id="form">
+    <label for="nome">Nome</label>
+    <div class="field">
+      <input id="nome" value="Marco" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Es. Marco">
+      <button type="submit">Calcola</button>
+    </div>
+  </form>
+
+  <section class="result" id="result" aria-live="polite"></section>
+
+  <section>
+    <h2>Valori delle lettere</h2>
+    <table id="tabella"></table>
+    <p class="note">Nel sistema caldeo nessuna lettera vale 9: il 9 è considerato sacro.</p>
+  </section>
+</main>
+
+<script>
+const MAPPA = {A:1,I:1,J:1,Q:1,Y:1,B:2,K:2,R:2,C:3,G:3,L:3,S:3,D:4,M:4,T:4,E:5,H:5,N:5,X:5,U:6,V:6,W:6,O:7,Z:7,F:8,P:8};
+const PIANETI = {
+  1: ["Surya · Sole", "Guida, volontà, indipendenza."],
+  2: ["Chandra · Luna", "Sensibilità, intuizione, cooperazione."],
+  3: ["Guru · Giove", "Saggezza, espansione, insegnamento."],
+  4: ["Rahu", "Originalità, cambiamento, ribellione."],
+  5: ["Budha · Mercurio", "Comunicazione, versatilità, commercio."],
+  6: ["Shukra · Venere", "Armonia, bellezza, affetti."],
+  7: ["Ketu", "Introspezione, spiritualità, distacco."],
+  8: ["Shani · Saturno", "Disciplina, pazienza, karma."],
+  9: ["Mangala · Marte", "Energia, coraggio, azione."]
+};
+const $ = id => document.getElementById(id);
+
+function riduci(n) {
+  while (n > 9) n = String(n).split("").reduce((a, c) => a + Number(c), 0);
+  return n;
+}
+
+function calcola() {
+  const lettere = $("nome").value.normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .toUpperCase().split("").filter(c => MAPPA[c]);
+  const out = $("result");
+  if (!lettere.length) {
+    out.innerHTML = '<p class="empty">Scrivi almeno una lettera (A–Z) per vedere il risultato.</p>';
+    return;
+  }
+  const valori = lettere.map(c => MAPPA[c]);
+  const somma = valori.reduce((a, b) => a + b, 0);
+  const ridotto = riduci(somma);
+  const [pianeta, desc] = PIANETI[ridotto];
+  out.innerHTML = `
+    <div class="numbers">
+      <div><div class="cap">Numero ridotto</div><div class="big">${ridotto}</div></div>
+      <div><div class="cap">Somma grezza</div><div class="compound">${somma}</div></div>
+    </div>
+    <div class="letters">${lettere.map((c, i) => `<div class="chip"><b>${c}</b><span>${valori[i]}</span></div>`).join("")}</div>
+    <div class="sum">${valori.join(" + ")} = ${somma}${somma > 9 ? " → " + ridotto : ""}</div>
+    <div class="planet"><div class="cap">Pianeta</div><strong>${pianeta}</strong><p>${desc}</p></div>`;
+}
+
+const gruppi = {};
+for (const [l, v] of Object.entries(MAPPA)) (gruppi[v] ||= []).push(l);
+$("tabella").innerHTML = Object.entries(gruppi).map(([v, ls]) => `<tr><td>${v}</td><td>${ls.join(" ")}</td></tr>`).join("");
+
+$("form").addEventListener("submit", e => { e.preventDefault(); calcola(); $("nome").blur(); });
+$("nome").addEventListener("input", calcola);
+calcola();
+</script>
